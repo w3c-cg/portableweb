@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>PortableWeb Format</title>
+  <script src="https://www.w3.org/Tools/respec/respec-w3c" async class="remove"></script>
+  <script class="remove">
+    var respecConfig = {
+      specStatus: "CG-DRAFT",
+      shortName: "portableweb-format",
+      editors: [
+        {
+          name: "Omprakash Selvaraj",
+          url: "https://github.com/omscse",
+        }
+      ],
+      github: "w3c-cg/portableweb",
+      group: "portableweb",
+      xref: "web-platform",
+      latestVersion: "https://w3c-cg.github.io/portableweb/",
+    };
+  </script>
+</head>
+<body>
+
+<h1 id="title">PortableWeb Format</h1>
+
+<section id="abstract">
+  <p>
+    This specification defines the PortableWeb format (<code>.pweb</code>), a file format for
+    self-contained, sandboxed, interactive documents. A <code>.pweb</code> file packages HTML, CSS,
+    JavaScript, and media into a single ZIP archive, intended to be opened by a compatible viewer
+    in an isolated execution environment, without requiring network access or server infrastructure.
+  </p>
+  <p>
+    The format provides an archival guarantee: a bundle declaring a given <code>spec_version</code>
+    in its manifest must remain openable by any future viewer that claims support for that version.
+  </p>
+  <p>
+    This document covers the container format and manifest schema. Companion specifications
+    covering the runtime sandbox, supported web platform feature profile, and cryptographic signing
+    are planned for future drafts.
+  </p>
+</section>
+
+<section id="sotd">
+  <p>
+    This is an early draft. The specification is being incubated in the
+    <a href="https://www.w3.org/community/portableweb/">W3C Portable Web Content Format Community Group</a>.
+    Feedback is welcome via <a href="https://github.com/w3c-cg/portableweb/issues">GitHub Issues</a>.
+  </p>
+  <p>
+    An IETF Internet-Draft covering the same material is available at
+    <a href="https://www.ietf.org/archive/id/draft-selvaraj-portableweb-format-01.txt">draft-selvaraj-portableweb-format-01</a>.
+  </p>
+  <p>
+    Implementations and tooling are maintained separately at
+    <a href="https://github.com/portableweb">github.com/portableweb</a>.
+  </p>
+</section>
+
+<section id="introduction">
+  <h2>Introduction</h2>
+  <p>
+    There is no widely-adopted file format for interactive content that the user owns and that lasts.
+    URLs depend on hosting and suffer link rot. PDFs cannot carry meaningful interactivity. Progressive
+    Web Apps install from URLs and depend on server infrastructure. Web Bundles were explored and
+    subsequently removed from browsers.
+  </p>
+  <p>
+    PortableWeb addresses this gap. A <code>.pweb</code> file is a ZIP archive containing an HTML
+    entry point, associated assets, and a manifest. It is opened by a compatible viewer which
+    provides a sandboxed execution environment. The bundle is the unit of preservation.
+  </p>
+
+  <section>
+    <h3>Design principles</h3>
+    <ol>
+      <li><strong>Self-contained.</strong> The bundle carries everything it needs. No CDN, no
+        network calls required at runtime.</li>
+      <li><strong>Sandboxed.</strong> No filesystem access, no surveillance APIs, network off by
+        default, storage scoped per bundle. Permissions declared upfront in the manifest.</li>
+      <li><strong>Archival.</strong> Each spec version freezes a stable subset. Bundles declaring
+        a given <code>spec_version</code> must remain openable by any compatible future viewer.</li>
+      <li><strong>Owned.</strong> A bundle is a file. No host, no account, no subscription.</li>
+    </ol>
+  </section>
+</section>
+
+<section id="conformance"></section>
+
+<section id="container">
+  <h2>Container Format</h2>
+  <p>
+    A <code>.pweb</code> file is a ZIP archive conforming to the
+    <a href="https://www.pkware.com/appnote">PKWARE APPNOTE</a> specification, with the
+    additional constraints defined in this section.
+  </p>
+
+  <section>
+    <h3>File extension and media type</h3>
+    <p>The registered file extension is <code>.pweb</code>.</p>
+    <p>The media type is <code>application/vnd.portableweb+zip</code>.</p>
+  </section>
+
+  <section>
+    <h3>Required entries</h3>
+    <p>A conforming bundle MUST contain the following entries at the archive root:</p>
+    <ol>
+      <li>
+        <code>mimetype</code> — MUST be the first entry in the archive, stored uncompressed
+        (<code>STORE</code> method, compression level 0), with no extra fields. Its content
+        MUST be the ASCII string <code>application/vnd.portableweb+zip</code> with no trailing
+        newline. This placement allows the <code>file(1)</code> command and other magic-byte
+        sniffers to identify the format.
+      </li>
+      <li>
+        <code>manifest.json</code> — the bundle manifest (see <a href="#manifest"></a>).
+      </li>
+      <li>
+        The entry HTML file referenced by the manifest's <code>entry</code> field.
+      </li>
+    </ol>
+  </section>
+
+  <section>
+    <h3>Reserved paths</h3>
+    <p>The following paths are reserved and MUST NOT be used for content files:</p>
+    <ul>
+      <li><code>mimetype</code></li>
+      <li><code>manifest.json</code></li>
+      <li><code>META-INF/</code></li>
+      <li><code>.well-known/</code></li>
+    </ul>
+  </section>
+</section>
+
+<section id="manifest">
+  <h2>Manifest</h2>
+  <p>
+    The manifest is a UTF-8 encoded JSON document stored at <code>manifest.json</code> in the
+    archive root.
+  </p>
+
+  <section>
+    <h3>Required fields</h3>
+    <dl>
+      <dt><code>spec_version</code></dt>
+      <dd>String. The PortableWeb spec version this bundle targets. MUST be <code>"0.1"</code>
+        for bundles conforming to this draft.</dd>
+
+      <dt><code>id</code></dt>
+      <dd>String. A globally unique reverse-domain identifier for this bundle, e.g.
+        <code>"org.example.my-bundle"</code>. Used for storage isolation.</dd>
+
+      <dt><code>version</code></dt>
+      <dd>String. The bundle's own version, following <a href="https://semver.org/">Semantic
+        Versioning 2.0.0</a>.</dd>
+
+      <dt><code>title</code></dt>
+      <dd>String. A human-readable name for the bundle. Maximum 200 characters.</dd>
+
+      <dt><code>entry</code></dt>
+      <dd>String. The path within the archive to the entry HTML file, e.g.
+        <code>"index.html"</code>.</dd>
+    </dl>
+  </section>
+
+  <section>
+    <h3>Recommended fields</h3>
+    <dl>
+      <dt><code>description</code></dt>
+      <dd>String. A short human-readable description of the bundle.</dd>
+
+      <dt><code>author</code></dt>
+      <dd>String or object. The bundle author.</dd>
+
+      <dt><code>created</code></dt>
+      <dd>String. ISO 8601 date/time of bundle creation.</dd>
+
+      <dt><code>icon</code></dt>
+      <dd>String. Path within the archive to an icon image.</dd>
+
+      <dt><code>permissions</code></dt>
+      <dd>Object. Declared capabilities required by the bundle (see <a href="#permissions"></a>).</dd>
+
+      <dt><code>rights</code></dt>
+      <dd>String. An <a href="https://spdx.org/licenses/">SPDX license identifier</a> or a
+        human-readable rights statement.</dd>
+    </dl>
+  </section>
+</section>
+
+<section id="permissions">
+  <h2>Permissions</h2>
+  <p>
+    Permissions are declared upfront in the manifest. The viewer enforces a default-deny policy:
+    any capability not declared in the manifest is denied at runtime. The viewer prompts the user
+    on first open based on declared permissions; the bundle cannot request additional permissions
+    at runtime.
+  </p>
+  <p>
+    The full permissions model, capability categories, and viewer tier requirements are defined
+    in the companion Capabilities specification (forthcoming).
+  </p>
+</section>
+
+<section id="security">
+  <h2>Security Considerations</h2>
+  <p>
+    Viewers MUST treat <code>.pweb</code> files as untrusted content. Implementations MUST
+    defend against ZIP-based attacks including decompression bombs, path traversal via
+    <code>../</code> sequences, and nested archives.
+  </p>
+  <p>
+    Each bundle MUST be executed in an isolated origin (e.g. a synthetic
+    <code>bundle://&lt;id&gt;/</code> origin) such that it cannot access the storage, DOM, or
+    execution context of the viewer application or other bundles.
+  </p>
+  <p>
+    Network access is off by default. Camera, microphone, and geolocation access are off by
+    default and require explicit permission declarations in the manifest.
+  </p>
+</section>
+
+<section id="archival-guarantee">
+  <h2>Archival Guarantee</h2>
+  <p>
+    A bundle declaring <code>spec_version: "1.0"</code> in its manifest MUST remain openable
+    by any future viewer that claims support for v1.0 bundles. Features MUST NOT be removed
+    from a published spec version. New features ship in new spec versions; old bundles never
+    break.
+  </p>
+</section>
+
+</body>
+</html>

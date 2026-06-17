@@ -1,8 +1,14 @@
-# Portable Web Content Format (PortableWeb) Community Group
+# Contributing to the PortableWeb W3C Community Group
 
-This repository is being used for work in the W3C Portable Web Content Format (PortableWeb) Community Group, governed by the [W3C Community License
-Agreement (CLA)](http://www.w3.org/community/about/process/cla/). To make substantive contributions,
-you must join the CG.
+This repository is for the **spec and CG process** — published spec drafts, status updates, and meeting notes.
+
+**If you want to contribute to implementations, tooling, or examples, go to the main project:** [github.com/portableweb](https://github.com/portableweb)
+
+---
+
+## Spec contributions
+
+This repository is governed by the [W3C Community License Agreement (CLA)](http://www.w3.org/community/about/process/cla/). To make substantive contributions to the spec, you must join the [W3C Community Group](https://www.w3.org/community/portableweb/) and agree to the CLA.
 
 If you are not the sole contributor to a contribution (pull request), please identify all
 contributors in the pull request comment.
