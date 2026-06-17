@@ -37,15 +37,17 @@
     in its manifest must remain openable by any future viewer that claims support for that version.
   </p>
   <p>
-    This document covers the container format and manifest schema. Companion specifications
-    covering the runtime sandbox, supported web platform feature profile, and cryptographic signing
-    are planned for future drafts.
+    This specification covers five areas: the container and packaging format, the manifest schema
+    and capability declaration model, viewer conformance requirements and security sandboxing,
+    the per-bundle storage model, and the inter-bundle communication model. A companion
+    <a href="guide.html">Implementation Guide</a> and
+    <a href="../tests/">Conformance Test Suite</a> are maintained alongside this document.
   </p>
 </section>
 
 <section id="sotd">
   <p>
-    This is an early draft. The specification is being incubated in the
+    This is an early Community Group Draft. The specification is being developed in the
     <a href="https://www.w3.org/community/portableweb/">W3C Portable Web Content Format Community Group</a>.
     Feedback is welcome via <a href="https://github.com/w3c-cg/portableweb/issues">GitHub Issues</a>.
   </p>
@@ -54,8 +56,13 @@
     <a href="https://www.ietf.org/archive/id/draft-selvaraj-portableweb-format-01.txt">draft-selvaraj-portableweb-format-01</a>.
   </p>
   <p>
-    Implementations and tooling are maintained separately at
+    Implementations and tooling are maintained at
     <a href="https://github.com/portableweb">github.com/portableweb</a>.
+  </p>
+  <p>
+    <strong>Sections 4–6 (Viewer Conformance, Storage Model, Inter-Bundle Communication) are
+    placeholders.</strong> They will be developed after the container and manifest sections
+    (Sections 2–3) are stable.
   </p>
 </section>
 
@@ -81,16 +88,31 @@
       <li><strong>Sandboxed.</strong> No filesystem access, no surveillance APIs, network off by
         default, storage scoped per bundle. Permissions declared upfront in the manifest.</li>
       <li><strong>Archival.</strong> Each spec version freezes a stable subset. Bundles declaring
-        a given <code>spec_version</code> must remain openable by any compatible future viewer.</li>
+        a given <code>spec_version</code> must remain openable by any compatible future viewer.
+        Features are never removed from a published version.</li>
       <li><strong>Owned.</strong> A bundle is a file. No host, no account, no subscription.</li>
     </ol>
+  </section>
+
+  <section>
+    <h3>Archival guarantee</h3>
+    <p>
+      A bundle declaring <code>spec_version: "1.0"</code> in its manifest MUST remain openable
+      by any future viewer that claims support for v1.0 bundles. Features MUST NOT be removed
+      from a published spec version. New features ship in new spec versions; old bundles never
+      break.
+    </p>
   </section>
 </section>
 
 <section id="conformance"></section>
 
+<!-- ============================================================
+     Goal 1: Container and Packaging Format
+     ============================================================ -->
+
 <section id="container">
-  <h2>Container Format</h2>
+  <h2>Container and Packaging Format</h2>
   <p>
     A <code>.pweb</code> file is a ZIP archive conforming to the
     <a href="https://www.pkware.com/appnote">PKWARE APPNOTE</a> specification, with the
@@ -112,7 +134,7 @@
         (<code>STORE</code> method, compression level 0), with no extra fields. Its content
         MUST be the ASCII string <code>application/vnd.portableweb+zip</code> with no trailing
         newline. This placement allows the <code>file(1)</code> command and other magic-byte
-        sniffers to identify the format.
+        sniffers to identify the format by reading the first ~80 bytes of the file.
       </li>
       <li>
         <code>manifest.json</code> — the bundle manifest (see <a href="#manifest"></a>).
@@ -133,13 +155,34 @@
       <li><code>.well-known/</code></li>
     </ul>
   </section>
+
+  <section>
+    <h3>Security constraints</h3>
+    <p>
+      Viewers MUST treat <code>.pweb</code> files as untrusted content before validation.
+      Implementations MUST defend against ZIP-based attacks including:
+    </p>
+    <ul>
+      <li>Decompression bombs (entries whose uncompressed size is excessively large)</li>
+      <li>Path traversal via <code>../</code> sequences in entry names</li>
+      <li>Nested archives</li>
+    </ul>
+    <p>
+      See the <a href="../tests/container/">container test cases</a> for conformance tests
+      covering these requirements.
+    </p>
+  </section>
 </section>
 
+<!-- ============================================================
+     Goal 2: Manifest Schema and Capability Declaration
+     ============================================================ -->
+
 <section id="manifest">
-  <h2>Manifest</h2>
+  <h2>Manifest Schema and Capability Declaration</h2>
   <p>
     The manifest is a UTF-8 encoded JSON document stored at <code>manifest.json</code> in the
-    archive root.
+    archive root. It declares the bundle's identity, entry point, and the capabilities it requires.
   </p>
 
   <section>
@@ -189,48 +232,136 @@
         human-readable rights statement.</dd>
     </dl>
   </section>
+
+  <section id="permissions">
+    <h3>Capability declaration and permissions</h3>
+    <p>
+      Capabilities are declared upfront in the manifest's <code>permissions</code> field. The
+      viewer enforces a default-deny policy: any capability not declared in the manifest is denied
+      at runtime. The viewer prompts the user on first open based on declared capabilities; the
+      bundle cannot request additional permissions at runtime.
+    </p>
+    <p>
+      The following capabilities are defined:
+    </p>
+    <table>
+      <thead>
+        <tr><th>Capability</th><th>Default</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>storage</code></td><td>isolated</td><td>Access to per-bundle isolated storage</td></tr>
+        <tr><td><code>internet.read</code></td><td>false</td><td>Outbound network reads from declared domains</td></tr>
+        <tr><td><code>internet.write</code></td><td>false</td><td>Outbound network writes</td></tr>
+        <tr><td><code>camera</code></td><td>false</td><td>Camera access</td></tr>
+        <tr><td><code>microphone</code></td><td>false</td><td>Microphone access</td></tr>
+        <tr><td><code>geolocation</code></td><td>false</td><td>Device geolocation</td></tr>
+        <tr><td><code>inter-bundle</code></td><td>false</td><td>Communication with other bundles over local network, Bluetooth, or WiFi Direct</td></tr>
+      </tbody>
+    </table>
+    <p>
+      The full capability schema, including field shapes for domain lists and justification strings,
+      will be specified as this section matures.
+    </p>
+  </section>
 </section>
 
-<section id="permissions">
-  <h2>Permissions</h2>
-  <p>
-    Permissions are declared upfront in the manifest. The viewer enforces a default-deny policy:
-    any capability not declared in the manifest is denied at runtime. The viewer prompts the user
-    on first open based on declared permissions; the bundle cannot request additional permissions
-    at runtime.
+<!-- ============================================================
+     Goal 3: Viewer Conformance and Security Sandboxing
+     ============================================================ -->
+
+<section id="viewer-conformance">
+  <h2>Viewer Conformance and Security Sandboxing</h2>
+  <p class="note">
+    This section is a placeholder. It will be developed after the container and manifest
+    sections are stable. See the <a href="../tests/sandbox/">sandbox test cases</a> for
+    the planned conformance coverage.
   </p>
   <p>
-    The full permissions model, capability categories, and viewer tier requirements are defined
-    in the companion Capabilities specification (forthcoming).
+    This section will define the requirements a viewer MUST meet to be considered conformant,
+    including:
   </p>
+  <ul>
+    <li>Origin isolation — each bundle MUST run in a synthetic isolated origin
+      (e.g. <code>bundle://&lt;id&gt;/</code>) with no access to the viewer's storage, DOM,
+      or execution context.</li>
+    <li>Enforcement of default-deny network and API access.</li>
+    <li>Content Security Policy injection.</li>
+    <li>Prevention of navigation or popup escapes from the sandboxed context.</li>
+    <li>Blocked APIs (filesystem, surveillance APIs, service worker registration).</li>
+  </ul>
 </section>
 
-<section id="security">
-  <h2>Security Considerations</h2>
-  <p>
-    Viewers MUST treat <code>.pweb</code> files as untrusted content. Implementations MUST
-    defend against ZIP-based attacks including decompression bombs, path traversal via
-    <code>../</code> sequences, and nested archives.
+<!-- ============================================================
+     Goal 4: Storage Model
+     ============================================================ -->
+
+<section id="storage">
+  <h2>Storage Model</h2>
+  <p class="note">
+    This section is a placeholder. It will be developed after the viewer conformance section
+    is stable. See the <a href="../tests/storage/">storage test cases</a> for the planned
+    conformance coverage.
   </p>
   <p>
-    Each bundle MUST be executed in an isolated origin (e.g. a synthetic
-    <code>bundle://&lt;id&gt;/</code> origin) such that it cannot access the storage, DOM, or
-    execution context of the viewer application or other bundles.
+    This section will specify:
   </p>
-  <p>
-    Network access is off by default. Camera, microphone, and geolocation access are off by
-    default and require explicit permission declarations in the manifest.
-  </p>
+  <ul>
+    <li>How per-bundle storage is scoped and isolated using the bundle's <code>id</code>.</li>
+    <li>Storage persistence across viewer sessions.</li>
+    <li>The <code>exportData()</code> and <code>importData()</code> portability hooks that
+      bundles using storage MUST expose.</li>
+    <li>Viewer "Save Snapshot" behavior — producing a new immutable <code>.pweb</code> with
+      current state baked in.</li>
+  </ul>
 </section>
 
-<section id="archival-guarantee">
-  <h2>Archival Guarantee</h2>
-  <p>
-    A bundle declaring <code>spec_version: "1.0"</code> in its manifest MUST remain openable
-    by any future viewer that claims support for v1.0 bundles. Features MUST NOT be removed
-    from a published spec version. New features ship in new spec versions; old bundles never
-    break.
+<!-- ============================================================
+     Goal 5: Inter-Bundle Communication
+     ============================================================ -->
+
+<section id="inter-bundle">
+  <h2>Inter-Bundle Communication</h2>
+  <p class="note">
+    This section is a placeholder. It will be developed after the storage model section
+    is stable. See the <a href="../tests/inter-bundle/">inter-bundle test cases</a> for
+    the planned conformance coverage.
   </p>
+  <p>
+    This section will specify a permission-gated channel enabling bundles to communicate
+    locally via Bluetooth, WiFi Direct, or local network. This makes offline multiplayer,
+    peer-to-peer, and collaborative interactive experiences possible without any server
+    infrastructure — a capability not addressed by any existing format or specification.
+  </p>
+  <p>
+    Key areas to be specified:
+  </p>
+  <ul>
+    <li>Permission declaration and user consent flow.</li>
+    <li>Discovery mechanism — how bundles find peers on the local network.</li>
+    <li>Channel API surface exposed to bundle JavaScript.</li>
+    <li>Session scoping and teardown.</li>
+  </ul>
+</section>
+
+<!-- ============================================================
+     Related documents
+     ============================================================ -->
+
+<section id="related">
+  <h2>Related Documents</h2>
+  <dl>
+    <dt><a href="guide.html">PortableWeb Implementation Guide</a></dt>
+    <dd>Non-normative guidance for content creators, AI tools, and viewer developers.</dd>
+
+    <dt><a href="../tests/">Conformance Test Suite</a></dt>
+    <dd>Test cases for verifying viewer conformance with this specification.</dd>
+
+    <dt><a href="https://www.ietf.org/archive/id/draft-selvaraj-portableweb-format-01.txt">IETF Internet-Draft (draft-selvaraj-portableweb-format-01)</a></dt>
+    <dd>Parallel IETF submission covering the container format and manifest schema.</dd>
+
+    <dt><a href="https://github.com/portableweb">PortableWeb project organization</a></dt>
+    <dd>Primary home for implementations, tooling, examples, and project development.</dd>
+  </dl>
 </section>
 
 </body>

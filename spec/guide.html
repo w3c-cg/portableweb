@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>PortableWeb Implementation Guide</title>
+  <script src="https://www.w3.org/Tools/respec/respec-w3c" async class="remove"></script>
+  <script class="remove">
+    var respecConfig = {
+      specStatus: "CG-DRAFT",
+      shortName: "portableweb-guide",
+      editors: [
+        {
+          name: "Omprakash Selvaraj",
+          url: "https://github.com/omscse",
+        }
+      ],
+      github: "w3c-cg/portableweb",
+      group: "portableweb",
+      latestVersion: "https://w3c-cg.github.io/portableweb/guide.html",
+      isNote: true,
+    };
+  </script>
+</head>
+<body>
+
+<h1 id="title">PortableWeb Implementation Guide</h1>
+
+<section id="abstract">
+  <p>
+    This document is a non-normative guide for implementors of the PortableWeb format. It covers
+    practical guidance for three audiences: <strong>content creators</strong> building
+    <code>.pweb</code> bundles, <strong>AI tools</strong> generating PortableWeb output, and
+    <strong>viewer developers</strong> building compatible viewers.
+  </p>
+  <p>
+    This guide accompanies the normative
+    <a href="index.html">PortableWeb Format specification</a>. In case of conflict, the
+    normative specification takes precedence.
+  </p>
+</section>
+
+<section id="sotd">
+  <p>
+    This is an early draft of a non-normative guide. It will grow alongside the normative
+    specification. Contributions and feedback are welcome via
+    <a href="https://github.com/w3c-cg/portableweb/issues">GitHub Issues</a>.
+  </p>
+</section>
+
+<section id="introduction">
+  <h2>Introduction</h2>
+  <p>
+    The PortableWeb format is designed to be simple to create and straightforward to implement.
+    This guide walks through the key decisions and practical steps involved for each audience.
+  </p>
+</section>
+
+<section id="content-creators">
+  <h2>For Content Creators</h2>
+
+  <section>
+    <h3>Creating a basic bundle</h3>
+    <p>
+      A minimal <code>.pweb</code> bundle requires three files: <code>mimetype</code>,
+      <code>manifest.json</code>, and an entry HTML file (typically <code>index.html</code>).
+    </p>
+    <p>
+      The easiest way to create a bundle is using the
+      <a href="https://github.com/portableweb/cli"><code>@portableweb/cli</code></a> tool:
+    </p>
+    <pre><code>npx @portableweb/cli pack ./my-project/</code></pre>
+    <p>
+      The CLI handles correct ZIP ordering, uncompressed <code>mimetype</code> placement,
+      and manifest validation automatically.
+    </p>
+  </section>
+
+  <section>
+    <h3>Writing the manifest</h3>
+    <p>
+      The manifest declares who the bundle is, what version of the spec it targets, and
+      what capabilities it needs. Only declare capabilities you actually use — viewers
+      present declared capabilities to the user before opening the bundle.
+    </p>
+    <pre><code>{
+  "spec_version": "0.1",
+  "id": "org.example.my-bundle",
+  "version": "1.0.0",
+  "title": "My Bundle",
+  "entry": "index.html"
+}</code></pre>
+  </section>
+
+  <section>
+    <h3>Keeping bundles self-contained</h3>
+    <p>
+      All assets (scripts, styles, images, fonts) must be included inside the bundle.
+      External URLs are blocked by default. If your content currently loads from a CDN,
+      download those assets and include them in the archive.
+    </p>
+  </section>
+</section>
+
+<section id="ai-tools">
+  <h2>For AI Tools</h2>
+  <p><em>This section is under development.</em></p>
+  <p>
+    AI tools that generate interactive web content (games, simulations, presentations,
+    educational materials) can output directly to <code>.pweb</code> format. Guidance on
+    generating spec-compliant bundles programmatically will be added here.
+  </p>
+  <p>
+    Key considerations for AI-generated bundles:
+  </p>
+  <ul>
+    <li>Inline all dependencies — no external script or style URLs.</li>
+    <li>Generate a valid <code>manifest.json</code> with a unique <code>id</code>
+      (use a reverse-domain scheme based on the tool's domain).</li>
+    <li>Declare only the capabilities the generated content actually uses.</li>
+    <li>Use the <code>@portableweb/cli</code> pack command or equivalent library to
+      produce the final archive correctly.</li>
+  </ul>
+</section>
+
+<section id="viewer-developers">
+  <h2>For Viewer Developers</h2>
+  <p><em>This section is under development.</em></p>
+  <p>
+    Guidance for implementing a conforming PortableWeb viewer will be added here as the
+    normative specification for viewer conformance (Goal 3) is completed. Key areas will
+    include:
+  </p>
+  <ul>
+    <li>ZIP parsing and validation sequence</li>
+    <li>Manifest parsing and capability negotiation</li>
+    <li>Sandboxed execution environment setup</li>
+    <li>Permission prompting and enforcement</li>
+    <li>Storage isolation implementation</li>
+    <li>Running the conformance test suite</li>
+  </ul>
+  <p>
+    See the <a href="../tests/">conformance test suite</a> for the current set of
+    viewer conformance tests.
+  </p>
+</section>
+
+</body>
+</html>

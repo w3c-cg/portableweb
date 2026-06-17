@@ -34,6 +34,8 @@ PortableWeb (`.pweb`) is an open file format for self-contained, sandboxed, inte
 
 Think of it as: *like PDF, but interactive. Like a webpage, but a file you own.*
 
+![PortableWeb flow](https://raw.githubusercontent.com/portableweb/.github/main/profile/flow.svg)
+
 ---
 
 ## Two GitHub Spaces

@@ -1,0 +1,34 @@
+{
+  "version": "0.1",
+  "updated": "2026-06-17",
+  "tests": [
+    {
+      "id": "tc-container-001",
+      "goal": "container",
+      "file": "container/tc-001-mimetype-first.md",
+      "type": "negative",
+      "status": "draft"
+    },
+    {
+      "id": "tc-container-002",
+      "goal": "container",
+      "file": "container/tc-002-missing-mimetype.md",
+      "type": "negative",
+      "status": "draft"
+    },
+    {
+      "id": "tc-container-003",
+      "goal": "container",
+      "file": "container/tc-003-missing-manifest.md",
+      "type": "negative",
+      "status": "draft"
+    },
+    {
+      "id": "tc-container-004",
+      "goal": "container",
+      "file": "container/tc-004-path-traversal.md",
+      "type": "negative",
+      "status": "draft"
+    }
+  ]
+}
