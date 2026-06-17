@@ -6,6 +6,8 @@ This repository hosts Community Group reports, issues, proposals, meeting notes,
 
 > **Main project:** [github.com/portableweb](https://github.com/portableweb)
 
+![PortableWeb flow](https://raw.githubusercontent.com/portableweb/.github/main/profile/flow.svg)
+
 ---
 
 ## About this Community Group
@@ -33,8 +35,6 @@ The mission of this group is to develop an open specification for a self-contain
 PortableWeb (`.pweb`) is an open file format for self-contained, sandboxed, interactive documents. A `.pweb` file packages HTML, CSS, JavaScript, and media into a single archive, opened by a compatible viewer in its own window, sandboxed from the host system.
 
 Think of it as: *like PDF, but interactive. Like a webpage, but a file you own.*
-
-![PortableWeb flow](https://raw.githubusercontent.com/portableweb/.github/main/profile/flow.svg)
 
 ---
 
