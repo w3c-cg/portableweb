@@ -1,6 +1,6 @@
 {
   "version": "0.1",
-  "updated": "2026-06-17",
+  "updated": "2026-07-24",
   "tests": [
     {
       "id": "tc-container-001",
@@ -28,6 +28,112 @@
       "goal": "container",
       "file": "container/tc-004-path-traversal.md",
       "type": "negative",
+      "status": "draft"
+    },
+    {
+      "id": "tc-manifest-001",
+      "goal": "manifest-schema",
+      "file": "manifest-schema/tc-001-required-fields-present.md",
+      "type": "positive",
+      "status": "draft"
+    },
+    {
+      "id": "tc-manifest-002",
+      "goal": "manifest-schema",
+      "file": "manifest-schema/tc-002-missing-required-field.md",
+      "type": "negative",
+      "status": "draft"
+    },
+    {
+      "id": "tc-manifest-003",
+      "goal": "manifest-schema",
+      "file": "manifest-schema/tc-003-malformed-id.md",
+      "type": "negative",
+      "status": "draft"
+    },
+    {
+      "id": "tc-manifest-004",
+      "goal": "manifest-schema",
+      "file": "manifest-schema/tc-004-invalid-version.md",
+      "type": "negative",
+      "status": "draft"
+    },
+    {
+      "id": "tc-manifest-005",
+      "goal": "manifest-schema",
+      "file": "manifest-schema/tc-005-invalid-entry-path.md",
+      "type": "negative",
+      "status": "draft"
+    },
+    {
+      "id": "tc-manifest-006",
+      "goal": "manifest-schema",
+      "file": "manifest-schema/tc-006-unknown-keys-tolerated.md",
+      "type": "positive",
+      "status": "draft"
+    },
+    {
+      "id": "tc-sandbox-001",
+      "goal": "sandbox",
+      "file": "sandbox/tc-001-per-bundle-storage-isolation.md",
+      "type": "positive",
+      "status": "draft"
+    },
+    {
+      "id": "tc-sandbox-002",
+      "goal": "sandbox",
+      "file": "sandbox/tc-002-declaration-is-not-grant.md",
+      "type": "negative",
+      "status": "draft",
+      "note": "keystone — validates the conformance model itself, not just one feature"
+    },
+    {
+      "id": "tc-sandbox-003",
+      "goal": "sandbox",
+      "file": "sandbox/tc-003-popup-blocked.md",
+      "type": "negative",
+      "status": "draft"
+    },
+    {
+      "id": "tc-sandbox-004",
+      "goal": "sandbox",
+      "file": "sandbox/tc-004-external-navigation-blocked.md",
+      "type": "negative",
+      "status": "draft"
+    },
+    {
+      "id": "tc-sandbox-005",
+      "goal": "sandbox",
+      "file": "sandbox/tc-005-service-worker-permanently-denied.md",
+      "type": "negative",
+      "status": "draft"
+    },
+    {
+      "id": "tc-sandbox-006",
+      "goal": "sandbox",
+      "file": "sandbox/tc-006-manifest-never-served-to-content.md",
+      "type": "negative",
+      "status": "draft"
+    },
+    {
+      "id": "tc-storage-001",
+      "goal": "storage",
+      "file": "storage/tc-001-storage-denied-throws-standard-error.md",
+      "type": "negative",
+      "status": "draft"
+    },
+    {
+      "id": "tc-storage-002",
+      "goal": "storage",
+      "file": "storage/tc-002-storage-persists-across-sessions.md",
+      "type": "positive",
+      "status": "draft"
+    },
+    {
+      "id": "tc-storage-003",
+      "goal": "storage",
+      "file": "storage/tc-003-storage-isolated-by-id.md",
+      "type": "positive",
       "status": "draft"
     }
   ]

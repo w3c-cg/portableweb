@@ -32,6 +32,16 @@ Viewer implementors report conformance by running each test case and noting the 
 
 ## Status
 
-Currently active: **Goal 1 — Container and packaging format**
+Active, with draft test cases: **Goal 1 — Container** (4), **Goal 2 — Manifest schema** (6),
+**Goal 3 — Sandbox** (6), **Goal 4 — Storage** (3). Goals 2–4's test cases were written
+against a working reference implementation (`portableweb/viewer`'s `packages/core` and
+`packages/electron`) rather than speculatively — see `status/2026-07-24.md` for what that
+implementation actually covers versus what's still open.
 
-Goals 2–5 are stubs; test cases will be added as the corresponding spec sections are written.
+**Goal 5 — Inter-bundle communication** remains a stub; no reference implementation exists
+yet for this goal, so no test cases have been written against real behavior.
+
+Note: `tc-sandbox-002` is called out in `manifest.json` as a **keystone** test — it validates
+the conformance model itself (a viewer implementing zero optional capabilities is still
+fully conformant, not partially so), not just one isolated feature. Prioritize this one if
+only reviewing a subset.
