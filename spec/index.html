@@ -53,8 +53,10 @@
     changes land there first and are cut into dated snapshots of this report and into IETF
     Internet-Draft revisions. Where this snapshot and the specification repository disagree,
     the repository is authoritative. This snapshot predates spec v0.2 (2026-07-24) and is
-    pending regeneration; in particular, the v0.2 permission model adopts this document's
-    <code>internet.read</code>/<code>internet.write</code> split into the main lineage.
+    pending regeneration; in particular, v0.2 replaces this snapshot's
+    <code>internet.read</code>/<code>internet.write</code> split with one <code>internet</code>
+    capability and an optional site list (the split keys remain accepted as aliases), because a
+    read request can carry data out as easily as a write.
   </p>
   <p>
     This is an early Community Group Draft. The specification is being developed in the
@@ -260,8 +262,7 @@
       </thead>
       <tbody>
         <tr><td><code>storage</code></td><td>isolated</td><td>Access to per-bundle isolated storage</td></tr>
-        <tr><td><code>internet.read</code></td><td>false</td><td>Outbound network reads from declared domains</td></tr>
-        <tr><td><code>internet.write</code></td><td>false</td><td>Outbound network writes</td></tr>
+        <tr><td><code>internet</code></td><td>false</td><td>Network access, optionally limited to a declared site list (<code>origins</code>); nothing outside the list is reachable</td></tr>
         <tr><td><code>camera</code></td><td>false</td><td>Camera access</td></tr>
         <tr><td><code>microphone</code></td><td>false</td><td>Microphone access</td></tr>
         <tr><td><code>geolocation</code></td><td>false</td><td>Device geolocation</td></tr>
